@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import aiohttp
+
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
@@ -23,9 +25,13 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: GruenbeckConfigEntry
 ) -> bool:
     """Set up Grünbeck softliQ Cloud from a config entry."""
-    # Use a dedicated session so the manually managed B2C login cookies
-    # cannot interfere with other integrations.
-    session = async_create_clientsession(hass)
+    # The B2C login cookies are managed manually because Grünbeck uses
+    # cookie names (e.g. "x-ms-cpim-cache|...") that aiohttp's cookie jar
+    # rejects; the jar would strip them and break the login on
+    # aiohttp >= 3.12, so it is disabled entirely.
+    session = async_create_clientsession(
+        hass, cookie_jar=aiohttp.DummyCookieJar()
+    )
     api = GruenbeckCloudApi(
         session, entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD]
     )
