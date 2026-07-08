@@ -1,0 +1,13 @@
+{
+  "domain": "gruenbeck_softliq",
+  "name": "Grünbeck softliQ Cloud",
+  "codeowners": ["@ironbiff"],
+  "config_flow": true,
+  "documentation": "https://github.com/ironbiff/ha-gruenbeck-softliq",
+  "integration_type": "device",
+  "iot_class": "cloud_push",
+  "issue_tracker": "https://github.com/ironbiff/ha-gruenbeck-softliq/issues",
+  "loggers": ["custom_components.gruenbeck_softliq"],
+  "requirements": [],
+  "version": "0.1.0"
+}

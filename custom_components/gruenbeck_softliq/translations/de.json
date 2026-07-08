@@ -1,0 +1,89 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "myGrünbeck-Konto",
+        "description": "Melde dich mit dem Konto an, das du in der myGrünbeck-App verwendest.",
+        "data": {
+          "username": "E-Mail",
+          "password": "Passwort"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Erneut anmelden",
+        "description": "Das Passwort für {username} ist nicht mehr gültig. Bitte gib das neue Passwort ein.",
+        "data": {
+          "password": "Passwort"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "E-Mail oder Passwort ist ungültig.",
+      "cannot_connect": "Verbindung zur Grünbeck-Cloud fehlgeschlagen.",
+      "unknown": "Unerwarteter Fehler, Details stehen im Log."
+    },
+    "abort": {
+      "already_configured": "Dieses Konto ist bereits eingerichtet.",
+      "no_devices_found": "In diesem Konto wurde kein softliQ-Gerät gefunden.",
+      "reauth_successful": "Die erneute Anmeldung war erfolgreich."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Grünbeck softliQ Optionen",
+        "data": {
+          "scan_interval": "Abfrageintervall (Sekunden)"
+        },
+        "data_description": {
+          "scan_interval": "Mindestens 360 Sekunden. Kürzere Intervalle werden von der Grünbeck-Cloud blockiert."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "flow_rate": { "name": "Durchfluss" },
+      "flow_rate_2": { "name": "Durchfluss Tauscher 2" },
+      "soft_water_quantity": { "name": "Weichwassermenge" },
+      "soft_water_quantity_2": { "name": "Weichwassermenge Tauscher 2" },
+      "makeup_water_quantity": { "name": "Nachfüllwassermenge" },
+      "remaining_capacity_volume": { "name": "Restkapazität" },
+      "remaining_capacity": { "name": "Restkapazität Prozent" },
+      "salt_range": { "name": "Salzreichweite" },
+      "salt_usage_total": { "name": "Salzverbrauch gesamt" },
+      "regeneration_counter": { "name": "Regenerationszähler" },
+      "regeneration_step": { "name": "Regenerationsschritt" },
+      "regeneration_progress": { "name": "Regenerationsfortschritt" },
+      "next_maintenance": { "name": "Wartung in" },
+      "soft_water_hardness": { "name": "Weichwasserhärte" },
+      "next_regeneration": { "name": "Nächste Regeneration" },
+      "startup_date": { "name": "Inbetriebnahme" },
+      "salt_usage_daily": { "name": "Salzverbrauch heute" },
+      "water_usage_daily": { "name": "Wasserverbrauch heute" }
+    },
+    "binary_sensor": {
+      "has_error": { "name": "Problem" },
+      "regeneration_active": { "name": "Regeneration" }
+    },
+    "button": {
+      "regenerate": { "name": "Regeneration starten" },
+      "boost_mode": { "name": "Boost-Modus starten" }
+    },
+    "number": {
+      "raw_water_hardness": { "name": "Rohwasserhärte" },
+      "soft_water_hardness_setpoint": { "name": "Sollwert Weichwasserhärte" }
+    },
+    "select": {
+      "operation_mode": {
+        "name": "Betriebsmodus",
+        "state": {
+          "eco": "Eco",
+          "comfort": "Comfort",
+          "power": "Power",
+          "individual": "Individuell"
+        }
+      }
+    }
+  }
+}

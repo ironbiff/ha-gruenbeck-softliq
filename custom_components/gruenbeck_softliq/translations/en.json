@@ -1,0 +1,89 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "myGrünbeck account",
+        "description": "Sign in with the account you use in the myGrünbeck app.",
+        "data": {
+          "username": "Email",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate",
+        "description": "The password for {username} is no longer valid. Please enter the new password.",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid email or password.",
+      "cannot_connect": "Could not connect to the Grünbeck cloud.",
+      "unknown": "Unexpected error, see the logs for details."
+    },
+    "abort": {
+      "already_configured": "This account is already configured.",
+      "no_devices_found": "No softliQ device was found in this account.",
+      "reauth_successful": "Re-authentication was successful."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Grünbeck softliQ options",
+        "data": {
+          "scan_interval": "Polling interval (seconds)"
+        },
+        "data_description": {
+          "scan_interval": "Minimum 360 seconds. Shorter intervals get blocked by the Grünbeck cloud."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "flow_rate": { "name": "Flow rate" },
+      "flow_rate_2": { "name": "Flow rate exchanger 2" },
+      "soft_water_quantity": { "name": "Soft water quantity" },
+      "soft_water_quantity_2": { "name": "Soft water quantity exchanger 2" },
+      "makeup_water_quantity": { "name": "Make-up water quantity" },
+      "remaining_capacity_volume": { "name": "Remaining capacity" },
+      "remaining_capacity": { "name": "Remaining capacity percent" },
+      "salt_range": { "name": "Salt range" },
+      "salt_usage_total": { "name": "Salt consumption total" },
+      "regeneration_counter": { "name": "Regeneration counter" },
+      "regeneration_step": { "name": "Regeneration step" },
+      "regeneration_progress": { "name": "Regeneration progress" },
+      "next_maintenance": { "name": "Maintenance in" },
+      "soft_water_hardness": { "name": "Soft water hardness" },
+      "next_regeneration": { "name": "Next regeneration" },
+      "startup_date": { "name": "Startup date" },
+      "salt_usage_daily": { "name": "Salt consumption today" },
+      "water_usage_daily": { "name": "Water consumption today" }
+    },
+    "binary_sensor": {
+      "has_error": { "name": "Problem" },
+      "regeneration_active": { "name": "Regeneration" }
+    },
+    "button": {
+      "regenerate": { "name": "Start regeneration" },
+      "boost_mode": { "name": "Start boost mode" }
+    },
+    "number": {
+      "raw_water_hardness": { "name": "Raw water hardness" },
+      "soft_water_hardness_setpoint": { "name": "Soft water hardness setpoint" }
+    },
+    "select": {
+      "operation_mode": {
+        "name": "Operating mode",
+        "state": {
+          "eco": "Eco",
+          "comfort": "Comfort",
+          "power": "Power",
+          "individual": "Individual"
+        }
+      }
+    }
+  }
+}
