@@ -58,6 +58,10 @@ class GruenbeckAuthError(GruenbeckError):
     """Authentication with the Grünbeck cloud failed."""
 
 
+class GruenbeckInvalidCredentials(GruenbeckAuthError):
+    """The Grünbeck cloud explicitly rejected the username/password."""
+
+
 class GruenbeckConnectionError(GruenbeckError):
     """Communication with the Grünbeck cloud failed."""
 
@@ -181,12 +185,14 @@ class GruenbeckCloudApi:
                 cookie = _cookie_header(resp) + f"; x-ms-cpim-csrf={csrf}"
 
             try:
-                status = str(json.loads(body).get("status"))
+                result = json.loads(body)
+                status = str(result.get("status"))
             except (json.JSONDecodeError, AttributeError):
-                status = ""
+                result, status = {}, ""
             if status != "200":
-                raise GruenbeckAuthError(
-                    "Grünbeck cloud rejected the credentials"
+                raise GruenbeckInvalidCredentials(
+                    "Grünbeck cloud rejected the credentials: "
+                    f"{result.get('message') or body[:200]}"
                 )
 
             # Step 3: confirm the login; the redirect carries the
@@ -244,7 +250,15 @@ class GruenbeckCloudApi:
             end = body.find(">here", start)
             if end != -1:
                 return body[start + len("code%3d") : end - 1]
-        raise GruenbeckAuthError("No authorization code received")
+        # Surface the B2C error (e.g. access_denied) for diagnosis; the
+        # location only contains an error description here, no secrets.
+        query = parse_qs(urlparse(location).query)
+        detail = (
+            query.get("error_description", query.get("error", ["unknown"]))[0]
+        )
+        raise GruenbeckAuthError(
+            f"No authorization code received (B2C answer: {detail})"
+        )
 
     async def _token_request(self, data: dict[str, str]) -> None:
         """Call the B2C token endpoint and store the tokens."""

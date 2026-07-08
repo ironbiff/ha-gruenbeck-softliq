@@ -20,7 +20,8 @@
     "error": {
       "invalid_auth": "E-Mail oder Passwort ist ungültig.",
       "cannot_connect": "Verbindung zur Grünbeck-Cloud fehlgeschlagen.",
-      "unknown": "Unerwarteter Fehler, Details stehen im Log."
+      "unknown": "Unerwarteter Fehler, Details stehen im Log.",
+      "login_flow_failed": "Der Grünbeck-Login ist in einem späteren Schritt fehlgeschlagen (nicht am Passwort). Details stehen im Home-Assistant-Log."
     },
     "abort": {
       "already_configured": "Dieses Konto ist bereits eingerichtet.",
@@ -43,36 +44,84 @@
   },
   "entity": {
     "sensor": {
-      "flow_rate": { "name": "Durchfluss" },
-      "flow_rate_2": { "name": "Durchfluss Tauscher 2" },
-      "soft_water_quantity": { "name": "Weichwassermenge" },
-      "soft_water_quantity_2": { "name": "Weichwassermenge Tauscher 2" },
-      "makeup_water_quantity": { "name": "Nachfüllwassermenge" },
-      "remaining_capacity_volume": { "name": "Restkapazität" },
-      "remaining_capacity": { "name": "Restkapazität Prozent" },
-      "salt_range": { "name": "Salzreichweite" },
-      "salt_usage_total": { "name": "Salzverbrauch gesamt" },
-      "regeneration_counter": { "name": "Regenerationszähler" },
-      "regeneration_step": { "name": "Regenerationsschritt" },
-      "regeneration_progress": { "name": "Regenerationsfortschritt" },
-      "next_maintenance": { "name": "Wartung in" },
-      "soft_water_hardness": { "name": "Weichwasserhärte" },
-      "next_regeneration": { "name": "Nächste Regeneration" },
-      "startup_date": { "name": "Inbetriebnahme" },
-      "salt_usage_daily": { "name": "Salzverbrauch heute" },
-      "water_usage_daily": { "name": "Wasserverbrauch heute" }
+      "flow_rate": {
+        "name": "Durchfluss"
+      },
+      "flow_rate_2": {
+        "name": "Durchfluss Tauscher 2"
+      },
+      "soft_water_quantity": {
+        "name": "Weichwassermenge"
+      },
+      "soft_water_quantity_2": {
+        "name": "Weichwassermenge Tauscher 2"
+      },
+      "makeup_water_quantity": {
+        "name": "Nachfüllwassermenge"
+      },
+      "remaining_capacity_volume": {
+        "name": "Restkapazität"
+      },
+      "remaining_capacity": {
+        "name": "Restkapazität Prozent"
+      },
+      "salt_range": {
+        "name": "Salzreichweite"
+      },
+      "salt_usage_total": {
+        "name": "Salzverbrauch gesamt"
+      },
+      "regeneration_counter": {
+        "name": "Regenerationszähler"
+      },
+      "regeneration_step": {
+        "name": "Regenerationsschritt"
+      },
+      "regeneration_progress": {
+        "name": "Regenerationsfortschritt"
+      },
+      "next_maintenance": {
+        "name": "Wartung in"
+      },
+      "soft_water_hardness": {
+        "name": "Weichwasserhärte"
+      },
+      "next_regeneration": {
+        "name": "Nächste Regeneration"
+      },
+      "startup_date": {
+        "name": "Inbetriebnahme"
+      },
+      "salt_usage_daily": {
+        "name": "Salzverbrauch heute"
+      },
+      "water_usage_daily": {
+        "name": "Wasserverbrauch heute"
+      }
     },
     "binary_sensor": {
-      "has_error": { "name": "Problem" },
-      "regeneration_active": { "name": "Regeneration" }
+      "has_error": {
+        "name": "Problem"
+      },
+      "regeneration_active": {
+        "name": "Regeneration"
+      }
     },
     "button": {
-      "regenerate": { "name": "Regeneration starten" },
-      "boost_mode": { "name": "Boost-Modus starten" }
+      "regenerate": {
+        "name": "Regeneration starten"
+      },
+      "boost_mode": {
+        "name": "Boost-Modus starten"
+      }
     },
     "number": {
-      "raw_water_hardness": { "name": "Rohwasserhärte" },
-      "soft_water_hardness_setpoint": { "name": "Sollwert Weichwasserhärte" }
+      "raw_water_hardness": {
+        "name": "Rohwasserhärte"
+      },
+      "soft_water_hardness_setpoint": {
+        "name": "Sollwert Weichwasserhärte"
+      }
     },
     "select": {
       "operation_mode": {

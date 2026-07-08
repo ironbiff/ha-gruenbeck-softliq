@@ -25,7 +25,12 @@ from homeassistant.helpers.selector import (
     TextSelectorType,
 )
 
-from .api import GruenbeckAuthError, GruenbeckCloudApi, GruenbeckConnectionError
+from .api import (
+    GruenbeckAuthError,
+    GruenbeckCloudApi,
+    GruenbeckConnectionError,
+    GruenbeckInvalidCredentials,
+)
 from .const import (
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
@@ -61,9 +66,14 @@ class GruenbeckConfigFlow(ConfigFlow, domain=DOMAIN):
         api = GruenbeckCloudApi(session, username, password)
         try:
             devices = await api.async_get_devices()
-        except GruenbeckAuthError:
+        except GruenbeckInvalidCredentials as err:
+            _LOGGER.warning("Grünbeck login rejected: %s", err)
             return {"base": "invalid_auth"}, []
-        except GruenbeckConnectionError:
+        except GruenbeckAuthError as err:
+            _LOGGER.warning("Grünbeck login flow failed: %s", err)
+            return {"base": "login_flow_failed"}, []
+        except GruenbeckConnectionError as err:
+            _LOGGER.warning("Grünbeck cloud not reachable: %s", err)
             return {"base": "cannot_connect"}, []
         except Exception:  # noqa: BLE001
             _LOGGER.exception("Unexpected error during login")
