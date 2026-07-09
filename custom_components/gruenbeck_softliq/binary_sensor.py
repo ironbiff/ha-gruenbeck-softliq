@@ -43,14 +43,12 @@ BINARY_SENSORS: tuple[GruenbeckBinarySensorDescription, ...] = (
         device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda data: data.device.get("hasError"),
-        exists_fn=lambda data: "hasError" in data.device,
     ),
     GruenbeckBinarySensorDescription(
         key="regeneration_active",
         translation_key="regeneration_active",
         device_class=BinarySensorDeviceClass.RUNNING,
         value_fn=_regeneration_active,
-        exists_fn=lambda data: "mregstatus" in data.realtime,
     ),
 )
 

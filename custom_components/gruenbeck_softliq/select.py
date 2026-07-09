@@ -23,8 +23,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up the select entities for a config entry."""
     coordinator = entry.runtime_data
-    if "pmode" in coordinator.data.parameters:
-        async_add_entities([GruenbeckOperationModeSelect(coordinator)])
+    async_add_entities([GruenbeckOperationModeSelect(coordinator)])
 
 
 class GruenbeckOperationModeSelect(GruenbeckEntity, SelectEntity):

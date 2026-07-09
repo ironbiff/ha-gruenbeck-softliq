@@ -60,9 +60,7 @@ async def async_setup_entry(
     """Set up the number entities for a config entry."""
     coordinator = entry.runtime_data
     async_add_entities(
-        GruenbeckNumber(coordinator, description)
-        for description in NUMBERS
-        if description.parameter in coordinator.data.parameters
+        GruenbeckNumber(coordinator, description) for description in NUMBERS
     )
 
 

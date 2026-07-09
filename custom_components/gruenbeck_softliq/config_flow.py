@@ -16,7 +16,6 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import callback
-from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
@@ -63,10 +62,10 @@ class GruenbeckConfigFlow(ConfigFlow, domain=DOMAIN):
         self, username: str, password: str
     ) -> tuple[dict[str, str], list[dict[str, Any]]]:
         """Try to log in and list devices; returns (errors, devices)."""
-        # DummyCookieJar: see comment in __init__.async_setup_entry.
-        session = async_create_clientsession(
-            self.hass, cookie_jar=aiohttp.DummyCookieJar()
-        )
+        # A short-lived session owned by this flow (HA-managed sessions
+        # must not be closed by integrations). DummyCookieJar: see
+        # comment in __init__.async_setup_entry.
+        session = aiohttp.ClientSession(cookie_jar=aiohttp.DummyCookieJar())
         api = GruenbeckCloudApi(session, username, password)
         try:
             devices = await api.async_get_devices()

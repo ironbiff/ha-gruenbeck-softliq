@@ -96,24 +96,32 @@ class GruenbeckCoordinator(DataUpdateCoordinator[GruenbeckData]):
             ):
                 self._merge_realtime(data.realtime, snapshot)
 
+            # Only stamp the fetch time when the cloud returned data, so
+            # an empty answer is retried on the next cycle instead of
+            # after the full interval.
             if now - self._last_device_fetch >= DEVICE_INFO_INTERVAL:
-                data.device = await self.api.async_get_device(self.device_id)
-                self._last_device_fetch = now
+                if device := await self.api.async_get_device(self.device_id):
+                    data.device = device
+                    self._last_device_fetch = now
 
             if now - self._last_parameters_fetch >= PARAMETERS_INTERVAL:
-                data.parameters = await self.api.async_get_parameters(
+                if parameters := await self.api.async_get_parameters(
                     self.device_id
-                )
-                self._last_parameters_fetch = now
+                ):
+                    data.parameters = parameters
+                    self._last_parameters_fetch = now
 
             if now - self._last_measurements_fetch >= MEASUREMENTS_INTERVAL:
-                data.salt = await self.api.async_get_measurements(
+                salt = await self.api.async_get_measurements(
                     self.device_id, "salt"
                 )
-                data.water = await self.api.async_get_measurements(
+                water = await self.api.async_get_measurements(
                     self.device_id, "water"
                 )
-                self._last_measurements_fetch = now
+                data.salt = salt or data.salt
+                data.water = water or data.water
+                if salt or water:
+                    self._last_measurements_fetch = now
         except GruenbeckAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except GruenbeckConnectionError as err:

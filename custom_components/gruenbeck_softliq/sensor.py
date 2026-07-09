@@ -8,6 +8,7 @@ from datetime import date, datetime
 from typing import Any
 
 from homeassistant.components.sensor import (
+    DOMAIN as SENSOR_DOMAIN,
     SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
@@ -22,10 +23,12 @@ from homeassistant.const import (
     UnitOfVolumeFlowRate,
 )
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 from homeassistant.util import dt as dt_util
 
+from .const import DOMAIN
 from .coordinator import GruenbeckConfigEntry, GruenbeckData
 from .entity import GruenbeckEntity
 
@@ -88,7 +91,6 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=_realtime("mflow1"),
-        exists_fn=_realtime_exists("mflow1"),
     ),
     GruenbeckSensorDescription(
         key="mflow2",
@@ -106,7 +108,6 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         device_class=SensorDeviceClass.WATER,
         state_class=SensorStateClass.TOTAL_INCREASING,
         value_fn=_realtime("mcountwater1"),
-        exists_fn=_realtime_exists("mcountwater1"),
     ),
     GruenbeckSensorDescription(
         key="mcountwater2",
@@ -125,7 +126,6 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_realtime("mcountwatertank"),
-        exists_fn=_realtime_exists("mcountwatertank"),
     ),
     GruenbeckSensorDescription(
         key="mrescapa1",
@@ -134,7 +134,6 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=2,
         value_fn=_realtime("mrescapa1"),
-        exists_fn=_realtime_exists("mrescapa1"),
     ),
     GruenbeckSensorDescription(
         key="mresidcap1",
@@ -142,7 +141,6 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=_realtime("mresidcap1"),
-        exists_fn=_realtime_exists("mresidcap1"),
     ),
     GruenbeckSensorDescription(
         key="msaltrange",
@@ -150,7 +148,6 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         native_unit_of_measurement=UnitOfTime.DAYS,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=_realtime("msaltrange"),
-        exists_fn=_realtime_exists("msaltrange"),
     ),
     GruenbeckSensorDescription(
         key="msaltusage",
@@ -158,7 +155,6 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         native_unit_of_measurement=UnitOfMass.KILOGRAMS,
         state_class=SensorStateClass.TOTAL_INCREASING,
         value_fn=_realtime("msaltusage"),
-        exists_fn=_realtime_exists("msaltusage"),
     ),
     GruenbeckSensorDescription(
         key="mcountreg",
@@ -166,7 +162,6 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_realtime("mcountreg"),
-        exists_fn=_realtime_exists("mcountreg"),
     ),
     GruenbeckSensorDescription(
         key="mregstatus",
@@ -174,7 +169,6 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_realtime("mregstatus"),
-        exists_fn=_realtime_exists("mregstatus"),
     ),
     GruenbeckSensorDescription(
         key="mregpercent1",
@@ -182,7 +176,6 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=_realtime("mregpercent1"),
-        exists_fn=_realtime_exists("mregpercent1"),
     ),
     GruenbeckSensorDescription(
         key="mmaint",
@@ -190,7 +183,6 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         native_unit_of_measurement=UnitOfTime.DAYS,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_realtime("mmaint"),
-        exists_fn=_realtime_exists("mmaint"),
     ),
     GruenbeckSensorDescription(
         key="mhardsoftw",
@@ -198,7 +190,6 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="°dH",
         value_fn=_realtime("mhardsoftw"),
-        exists_fn=_realtime_exists("mhardsoftw"),
     ),
     # --- device information ---
     GruenbeckSensorDescription(
@@ -208,7 +199,6 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         value_fn=lambda data: _as_timestamp(
             data.device.get("nextRegeneration")
         ),
-        exists_fn=lambda data: "nextRegeneration" in data.device,
     ),
     GruenbeckSensorDescription(
         key="startup",
@@ -217,7 +207,6 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
         value_fn=lambda data: _as_date(data.device.get("startup")),
-        exists_fn=lambda data: "startup" in data.device,
     ),
     # --- daily measurements ---
     GruenbeckSensorDescription(
@@ -227,7 +216,6 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=2,
         value_fn=_latest_measurement("salt"),
-        exists_fn=lambda data: bool(data.salt),
         attributes_fn=lambda data: {"history": data.salt},
     ),
     GruenbeckSensorDescription(
@@ -236,7 +224,6 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         native_unit_of_measurement=UnitOfVolume.LITERS,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=_latest_measurement("water"),
-        exists_fn=lambda data: bool(data.water),
         attributes_fn=lambda data: {"history": data.water},
     ),
 )
@@ -249,10 +236,18 @@ async def async_setup_entry(
 ) -> None:
     """Set up the sensors for a config entry."""
     coordinator = entry.runtime_data
+    registry = er.async_get(hass)
     async_add_entities(
         GruenbeckSensor(coordinator, description)
         for description in SENSORS
+        # Model-dependent entities (second exchanger) are created when the
+        # device reports them or when they were registered before.
         if description.exists_fn(coordinator.data)
+        or registry.async_get_entity_id(
+            SENSOR_DOMAIN,
+            DOMAIN,
+            f"{coordinator.serial_number}_{description.key}",
+        )
     )
 
 
