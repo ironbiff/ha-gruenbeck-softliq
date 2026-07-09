@@ -184,12 +184,21 @@ class GruenbeckCloudApi:
                 body = await resp.text()
                 cookie = _cookie_header(resp) + f"; x-ms-cpim-csrf={csrf}"
 
+            # Only a parsed JSON answer with status != 200 means the
+            # credentials were rejected; anything else (HTML error page,
+            # changed login flow) is a flow failure, not a wrong password.
             try:
                 result = json.loads(body)
-                status = str(result.get("status"))
-            except (json.JSONDecodeError, AttributeError):
-                result, status = {}, ""
-            if status != "200":
+            except json.JSONDecodeError as err:
+                raise GruenbeckAuthError(
+                    "Unexpected (non-JSON) login response; the Grünbeck"
+                    f" login flow may have changed: {body[:120]!r}"
+                ) from err
+            if not isinstance(result, dict):
+                raise GruenbeckAuthError(
+                    f"Unexpected login response format: {body[:120]!r}"
+                )
+            if str(result.get("status")) != "200":
                 raise GruenbeckInvalidCredentials(
                     "Grünbeck cloud rejected the credentials: "
                     f"{result.get('message') or body[:200]}"
@@ -273,7 +282,12 @@ class GruenbeckCloudApi:
             },
             timeout=_TIMEOUT,
         ) as resp:
-            payload = await resp.json(content_type=None)
+            try:
+                payload = await resp.json(content_type=None)
+            except ValueError as err:  # includes json.JSONDecodeError
+                raise GruenbeckConnectionError(
+                    f"Token endpoint returned invalid JSON (HTTP {resp.status})"
+                ) from err
         if resp.status >= 400 or "access_token" not in payload:
             raise GruenbeckAuthError(
                 f"Token request failed: {payload.get('error_description', payload)}"
@@ -363,7 +377,12 @@ class GruenbeckCloudApi:
                     )
                 if resp.status == 204 or not (text := await resp.text()):
                     return None
-                return json.loads(text)
+                try:
+                    return json.loads(text)
+                except json.JSONDecodeError as err:
+                    raise GruenbeckConnectionError(
+                        f"Invalid JSON from {path}: {text[:120]!r}"
+                    ) from err
         except (aiohttp.ClientError, asyncio.TimeoutError) as err:
             raise GruenbeckConnectionError(
                 f"Request {method} {path} failed: {err}"
@@ -463,7 +482,12 @@ class GruenbeckCloudApi:
                 connection_id = (await resp.json(content_type=None))[
                     "connectionId"
                 ]
-        except (aiohttp.ClientError, asyncio.TimeoutError, KeyError) as err:
+        except (
+            aiohttp.ClientError,
+            asyncio.TimeoutError,
+            ValueError,  # includes json.JSONDecodeError
+            KeyError,
+        ) as err:
             raise GruenbeckConnectionError(
                 f"Websocket negotiation failed: {err}"
             ) from err

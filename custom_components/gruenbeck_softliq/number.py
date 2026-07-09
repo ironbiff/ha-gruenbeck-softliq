@@ -11,12 +11,13 @@ from homeassistant.components.number import (
 )
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .api import GruenbeckError
-from .coordinator import GruenbeckConfigEntry
+from .coordinator import GruenbeckConfigEntry, hardness_unit
 from .entity import GruenbeckEntity
+
+# Conversion factor between German and French hardness degrees.
+_DH_TO_FH = 1.79
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -34,7 +35,6 @@ NUMBERS: tuple[GruenbeckNumberDescription, ...] = (
         native_min_value=1,
         native_max_value=45,
         native_step=1,
-        native_unit_of_measurement="°dH",
         mode=NumberMode.BOX,
         entity_category=EntityCategory.CONFIG,
     ),
@@ -45,7 +45,6 @@ NUMBERS: tuple[GruenbeckNumberDescription, ...] = (
         native_min_value=0,
         native_max_value=15,
         native_step=1,
-        native_unit_of_measurement="°dH",
         mode=NumberMode.BOX,
         entity_category=EntityCategory.CONFIG,
     ),
@@ -65,7 +64,7 @@ async def async_setup_entry(
 
 
 class GruenbeckNumber(GruenbeckEntity, NumberEntity):
-    """A writable numeric parameter of the softliQ device."""
+    """A writable hardness parameter of the softliQ device."""
 
     entity_description: GruenbeckNumberDescription
 
@@ -76,6 +75,19 @@ class GruenbeckNumber(GruenbeckEntity, NumberEntity):
     ) -> None:
         super().__init__(coordinator, description.key)
         self.entity_description = description
+
+    @property
+    def native_unit_of_measurement(self) -> str:
+        """Return the hardness unit configured on the device."""
+        return hardness_unit(self.coordinator.data)
+
+    @property
+    def native_max_value(self) -> float:
+        """Return the maximum, scaled for French hardness degrees."""
+        maximum = self.entity_description.native_max_value
+        if hardness_unit(self.coordinator.data) == "°fH":
+            return round(maximum * _DH_TO_FH)
+        return maximum
 
     @property
     def native_value(self) -> float | None:
@@ -90,15 +102,7 @@ class GruenbeckNumber(GruenbeckEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Write the parameter to the device."""
-        parameter = self.entity_description.parameter
-        try:
-            await self.coordinator.api.async_set_parameters(
-                self.coordinator.device_id,
-                {parameter: int(value) if value.is_integer() else value},
-            )
-        except GruenbeckError as err:
-            raise HomeAssistantError(
-                f"Setting {parameter} failed: {err}"
-            ) from err
-        self.coordinator.data.parameters[parameter] = value
-        await self.coordinator.async_refresh_parameters()
+        await self.coordinator.async_set_parameter(
+            self.entity_description.parameter,
+            int(value) if value.is_integer() else value,
+        )

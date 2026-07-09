@@ -29,7 +29,7 @@ from homeassistant.helpers.typing import StateType
 from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN
-from .coordinator import GruenbeckConfigEntry, GruenbeckData
+from .coordinator import GruenbeckConfigEntry, GruenbeckData, hardness_unit
 from .entity import GruenbeckEntity
 
 
@@ -238,17 +238,35 @@ async def async_setup_entry(
     """Set up the sensors for a config entry."""
     coordinator = entry.runtime_data
     registry = er.async_get(hass)
-    async_add_entities(
-        GruenbeckSensor(coordinator, description)
-        for description in SENSORS
-        # Model-dependent entities (second exchanger) are created when the
-        # device reports them or when they were registered before.
-        if description.exists_fn(coordinator.data)
-        or registry.async_get_entity_id(
-            SENSOR_DOMAIN,
-            DOMAIN,
-            f"{coordinator.serial_number}_{description.key}",
-        )
+    added: set[str] = set()
+
+    def _add_available_sensors() -> None:
+        # Model-dependent entities (second exchanger) are created when
+        # the device reports them — also later via websocket push — or
+        # when they were registered before.
+        new = [
+            description
+            for description in SENSORS
+            if description.key not in added
+            and (
+                description.exists_fn(coordinator.data)
+                or registry.async_get_entity_id(
+                    SENSOR_DOMAIN,
+                    DOMAIN,
+                    f"{coordinator.serial_number}_{description.key}",
+                )
+            )
+        ]
+        if new:
+            added.update(description.key for description in new)
+            async_add_entities(
+                GruenbeckSensor(coordinator, description)
+                for description in new
+            )
+
+    _add_available_sensors()
+    entry.async_on_unload(
+        coordinator.async_add_listener(_add_available_sensors)
     )
 
 
@@ -269,6 +287,13 @@ class GruenbeckSensor(GruenbeckEntity, SensorEntity):
     def native_value(self) -> StateType | datetime | date:
         """Return the sensor value."""
         return self.entity_description.value_fn(self.coordinator.data)
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        """Return the unit, following the device's hardness unit setting."""
+        if self.entity_description.key == "mhardsoftw":
+            return hardness_unit(self.coordinator.data)
+        return self.entity_description.native_unit_of_measurement
 
     @property
     def extra_state_attributes(self) -> Mapping[str, Any] | None:

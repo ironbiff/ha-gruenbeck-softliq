@@ -15,6 +15,8 @@ DEFAULT_SCAN_INTERVAL = 360
 DEVICE_INFO_INTERVAL = 60 * 60
 PARAMETERS_INTERVAL = 60 * 60
 MEASUREMENTS_INTERVAL = 8 * 60 * 60
+# Retry delay after the cloud answered an endpoint with no data.
+EMPTY_RETRY_INTERVAL = 30 * 60
 
 # --- Grünbeck cloud API ---
 API_BASE = "https://prod-eu-gruenbeck-api.azurewebsites.net/api"

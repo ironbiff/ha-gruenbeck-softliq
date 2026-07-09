@@ -11,7 +11,7 @@ from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
@@ -21,18 +21,25 @@ from .api import (
     GruenbeckAuthError,
     GruenbeckCloudApi,
     GruenbeckConnectionError,
+    GruenbeckError,
+    GruenbeckInvalidCredentials,
 )
 from .const import (
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
     DEVICE_INFO_INTERVAL,
     DOMAIN,
+    EMPTY_RETRY_INTERVAL,
     MEASUREMENTS_INTERVAL,
     MIN_SCAN_INTERVAL,
     PARAMETERS_INTERVAL,
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+# Delay between full-login retries of the websocket after an auth error;
+# hammering the B2C login is what gets accounts blocked by Grünbeck.
+_WS_AUTH_RETRY = 900
 
 type GruenbeckConfigEntry = ConfigEntry[GruenbeckCoordinator]
 
@@ -46,6 +53,11 @@ class GruenbeckData:
     realtime: dict[str, Any] = field(default_factory=dict)
     salt: list[dict[str, Any]] = field(default_factory=list)
     water: list[dict[str, Any]] = field(default_factory=list)
+
+
+def hardness_unit(data: GruenbeckData) -> str:
+    """Return the hardness unit configured on the device (1=°dH, 2=°fH)."""
+    return "°fH" if data.device.get("unit") == 2 else "°dH"
 
 
 class GruenbeckCoordinator(DataUpdateCoordinator[GruenbeckData]):
@@ -77,10 +89,19 @@ class GruenbeckCoordinator(DataUpdateCoordinator[GruenbeckData]):
             device.get("serialNumber") or self.device_id
         ).replace("/", "_")
         self._initial_device = device
-        self._last_device_fetch = 0.0
-        self._last_parameters_fetch = 0.0
-        self._last_measurements_fetch = 0.0
+        # Per-endpoint fetch bookkeeping: key -> (last fetch, had data).
+        # Empty cloud answers are retried after EMPTY_RETRY_INTERVAL
+        # instead of the full interval.
+        self._fetch_state: dict[str, tuple[float, bool]] = {}
         self._ws_task: asyncio.Task | None = None
+
+    def _fetch_due(self, key: str, interval: int, now: float) -> bool:
+        """Whether an endpoint is due for a fetch."""
+        last, had_data = self._fetch_state.get(key, (0.0, False))
+        due_after = (
+            interval if had_data else min(interval, EMPTY_RETRY_INTERVAL)
+        )
+        return now - last >= due_after
 
     async def _async_update_data(self) -> GruenbeckData:
         """Poll the cloud API."""
@@ -96,58 +117,64 @@ class GruenbeckCoordinator(DataUpdateCoordinator[GruenbeckData]):
             ):
                 self._merge_realtime(data.realtime, snapshot)
 
-            # Only stamp the fetch time when the cloud returned data, so
-            # an empty answer is retried on the next cycle instead of
-            # after the full interval.
-            if now - self._last_device_fetch >= DEVICE_INFO_INTERVAL:
-                if device := await self.api.async_get_device(self.device_id):
+            if self._fetch_due("device", DEVICE_INFO_INTERVAL, now):
+                device = await self.api.async_get_device(self.device_id)
+                if device:
                     data.device = device
-                    self._last_device_fetch = now
+                self._fetch_state["device"] = (now, bool(device))
 
-            if now - self._last_parameters_fetch >= PARAMETERS_INTERVAL:
-                if parameters := await self.api.async_get_parameters(
+            if self._fetch_due("parameters", PARAMETERS_INTERVAL, now):
+                parameters = await self.api.async_get_parameters(
                     self.device_id
-                ):
+                )
+                if parameters:
                     data.parameters = parameters
-                    self._last_parameters_fetch = now
+                self._fetch_state["parameters"] = (now, bool(parameters))
 
-            if now - self._last_measurements_fetch >= MEASUREMENTS_INTERVAL:
-                salt = await self.api.async_get_measurements(
-                    self.device_id, "salt"
-                )
-                water = await self.api.async_get_measurements(
-                    self.device_id, "water"
-                )
-                data.salt = salt or data.salt
-                data.water = water or data.water
-                if salt or water:
-                    self._last_measurements_fetch = now
-        except GruenbeckAuthError as err:
+            for kind in ("salt", "water"):
+                if self._fetch_due(kind, MEASUREMENTS_INTERVAL, now):
+                    measurements = await self.api.async_get_measurements(
+                        self.device_id, kind
+                    )
+                    if measurements:
+                        setattr(data, kind, measurements)
+                    self._fetch_state[kind] = (now, bool(measurements))
+        except GruenbeckInvalidCredentials as err:
             raise ConfigEntryAuthFailed(str(err)) from err
-        except GruenbeckConnectionError as err:
+        except GruenbeckError as err:
             raise UpdateFailed(str(err)) from err
 
         return data
 
-    async def async_refresh_parameters(self) -> None:
-        """Re-read the parameters (after a write) and notify entities."""
+    async def async_set_parameter(self, parameter: str, value: Any) -> None:
+        """Write one device parameter and update local state."""
         try:
-            self.data.parameters = await self.api.async_get_parameters(
-                self.device_id
+            await self.api.async_set_parameters(
+                self.device_id, {parameter: value}
             )
-            self._last_parameters_fetch = time.monotonic()
-        except GruenbeckConnectionError as err:
-            _LOGGER.warning("Could not refresh parameters: %s", err)
+        except GruenbeckError as err:
+            raise HomeAssistantError(
+                f"Setting {parameter} failed: {err}"
+            ) from err
+        # The cloud applies writes asynchronously; show the new value
+        # right away and let the periodic parameters poll reconcile.
+        self.data.parameters[parameter] = value
         self.async_update_listeners()
 
     @staticmethod
     def _merge_realtime(
         target: dict[str, Any], update: dict[str, Any]
-    ) -> None:
-        """Merge a realtime snapshot / push message into the state."""
+    ) -> bool:
+        """Merge a realtime snapshot / push message; return True on change."""
+        changed = False
         for key, value in update.items():
-            if isinstance(value, (str, int, float, bool)):
+            if (
+                isinstance(value, (str, int, float, bool))
+                and target.get(key) != value
+            ):
                 target[key] = value
+                changed = True
+        return changed
 
     # ------------------------------------------------------------------
     # Websocket handling
@@ -169,7 +196,7 @@ class GruenbeckCoordinator(DataUpdateCoordinator[GruenbeckData]):
             self._ws_task = None
         try:
             await self.api.async_realtime(self.device_id, "leave")
-        except (GruenbeckAuthError, GruenbeckConnectionError):
+        except GruenbeckError:
             _LOGGER.debug("Could not leave realtime mode on shutdown")
         await super().async_shutdown()
 
@@ -180,12 +207,20 @@ class GruenbeckCoordinator(DataUpdateCoordinator[GruenbeckData]):
             try:
                 await self.api.async_listen_websocket(self._handle_ws_message)
                 backoff = 5
-            except GruenbeckAuthError:
-                _LOGGER.debug("Websocket auth failed, retrying after login")
+            except GruenbeckInvalidCredentials:
+                _LOGGER.warning(
+                    "Websocket stopped: the Grünbeck cloud rejected the"
+                    " credentials; waiting for re-authentication"
+                )
+                return
+            except GruenbeckAuthError as err:
+                # A full login retry on every reconnect would hammer the
+                # B2C endpoint; back off far more aggressively.
+                _LOGGER.debug("Websocket auth error: %s", err)
+                await asyncio.sleep(_WS_AUTH_RETRY)
+                continue
             except GruenbeckConnectionError as err:
                 _LOGGER.debug("Websocket error: %s", err)
-            except asyncio.CancelledError:
-                raise
             _LOGGER.debug("Websocket reconnect in %s seconds", backoff)
             await asyncio.sleep(backoff)
             backoff = min(backoff * 2, 300)
@@ -198,5 +233,8 @@ class GruenbeckCoordinator(DataUpdateCoordinator[GruenbeckData]):
             return
         if self.data is None:
             return
-        self._merge_realtime(self.data.realtime, message)
-        self.async_set_updated_data(self.data)
+        if self._merge_realtime(self.data.realtime, message):
+            # async_update_listeners (unlike async_set_updated_data) does
+            # not reset the poll schedule, so the realtime keep-alive
+            # keeps firing every scan interval even during push bursts.
+            self.async_update_listeners()

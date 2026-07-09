@@ -5,10 +5,8 @@ from __future__ import annotations
 from homeassistant.components.select import SelectEntity
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .api import GruenbeckError
 from .const import OPERATION_MODES
 from .coordinator import GruenbeckConfigEntry
 from .entity import GruenbeckEntity
@@ -47,14 +45,6 @@ class GruenbeckOperationModeSelect(GruenbeckEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Change the operating mode."""
-        mode = MODE_BY_OPTION[option]
-        try:
-            await self.coordinator.api.async_set_parameters(
-                self.coordinator.device_id, {"pmode": mode}
-            )
-        except GruenbeckError as err:
-            raise HomeAssistantError(
-                f"Setting operation mode failed: {err}"
-            ) from err
-        self.coordinator.data.parameters["pmode"] = mode
-        await self.coordinator.async_refresh_parameters()
+        await self.coordinator.async_set_parameter(
+            "pmode", MODE_BY_OPTION[option]
+        )

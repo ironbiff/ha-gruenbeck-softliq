@@ -9,7 +9,11 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
-from .api import GruenbeckAuthError, GruenbeckCloudApi, GruenbeckConnectionError
+from .api import (
+    GruenbeckCloudApi,
+    GruenbeckError,
+    GruenbeckInvalidCredentials,
+)
 from .coordinator import GruenbeckConfigEntry, GruenbeckCoordinator
 
 PLATFORMS: list[Platform] = [
@@ -38,9 +42,11 @@ async def async_setup_entry(
 
     try:
         devices = await api.async_get_devices()
-    except GruenbeckAuthError as err:
+    except GruenbeckInvalidCredentials as err:
         raise ConfigEntryAuthFailed(str(err)) from err
-    except GruenbeckConnectionError as err:
+    except GruenbeckError as err:
+        # Transient cloud problems (throttling, changed login page,
+        # gateway errors) are retried instead of forcing a re-auth.
         raise ConfigEntryNotReady(str(err)) from err
 
     if not devices:

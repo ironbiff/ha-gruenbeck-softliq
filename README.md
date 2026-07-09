@@ -106,6 +106,10 @@ water statistics every 8 hours.
 
 ## Notes & known limitations
 
+- Hardness units follow the unit configured on the device (°dH or °fH).
+  The daily salt measurement is reported by the cloud in **grams**
+  (verified live on a softliQ:SD18); if your model reports a different
+  unit, please open an issue.
 - The cloud only accepts one realtime session per account at a time. If the
   myGrünbeck app is open at the same moment, values may pause briefly.
 - Grünbeck did not publish this API; it was reverse engineered from the
