@@ -71,6 +71,18 @@ def _as_timestamp(value: Any) -> datetime | None:
     return dt_util.as_local(parsed)
 
 
+def _latest_error(data: GruenbeckData) -> dict[str, Any] | None:
+    """Return the most recent error entry from the device error list."""
+    errors = [
+        error
+        for error in data.device.get("errors") or []
+        if isinstance(error, dict)
+    ]
+    if not errors:
+        return None
+    return max(errors, key=lambda error: str(error.get("date", "")))
+
+
 def _as_date(value: Any) -> date | None:
     if not value or not isinstance(value, str):
         return None
@@ -199,6 +211,23 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         device_class=SensorDeviceClass.TIMESTAMP,
         value_fn=lambda data: _as_timestamp(
             data.device.get("nextRegeneration")
+        ),
+    ),
+    GruenbeckSensorDescription(
+        key="last_error",
+        translation_key="last_error",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: (_latest_error(data) or {}).get("message"),
+        attributes_fn=lambda data: (
+            {
+                "date": error.get("date"),
+                "error_code": error.get("errorCode"),
+                "type": error.get("type"),
+                "is_resolved": error.get("isResolved"),
+                "description": error.get("description"),
+            }
+            if (error := _latest_error(data))
+            else None
         ),
     ),
     GruenbeckSensorDescription(

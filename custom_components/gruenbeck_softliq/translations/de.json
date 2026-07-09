@@ -97,6 +97,9 @@
       },
       "water_usage_daily": {
         "name": "Wasserverbrauch heute"
+      },
+      "last_error": {
+        "name": "Letzter Fehler"
       }
     },
     "binary_sensor": {
