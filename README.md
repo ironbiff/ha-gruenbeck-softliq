@@ -1,5 +1,15 @@
 # Grünbeck softliQ Cloud — Home Assistant Integration
 
+> [!IMPORTANT]
+> **This is a vibe-coded project.** I built this integration to test
+> Anthropic's Claude (Fable 5): the model analyzed the Grünbeck cloud
+> protocol, wrote the code, debugged it against my real softliQ:SD18 and
+> published this repository. Somewhat foolishly, I only checked *afterwards*
+> whether integrations for these devices already exist — they do (see
+> [p0l0/hagruenbeck_cloud](https://github.com/p0l0/hagruenbeck_cloud)), but
+> unfortunately none of them are listed in HACS either. Use whichever suits
+> you; this one is the integration I actually run at home.
+
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![GitHub Release](https://img.shields.io/github/release/ironbiff/ha-gruenbeck-softliq.svg)](https://github.com/ironbiff/ha-gruenbeck-softliq/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
