@@ -4,11 +4,20 @@
 > **This is a vibe-coded project.** I built this integration to test
 > Anthropic's Claude (Fable 5): the model analyzed the Grünbeck cloud
 > protocol, wrote the code, debugged it against my real softliQ:SD18 and
-> published this repository. Somewhat foolishly, I only checked *afterwards*
-> whether integrations for these devices already exist — they do (see
-> [p0l0/hagruenbeck_cloud](https://github.com/p0l0/hagruenbeck_cloud)), but
-> unfortunately none of them are listed in HACS either. Use whichever suits
-> you; this one is the integration I actually run at home.
+> published this repository.
+>
+> Some backstory: for years I kept a whole ioBroker instance running as an
+> app for one single purpose — the (by now no longer maintained)
+> [ioBroker Grünbeck adapter](https://github.com/TA2k/ioBroker.gruenbeck),
+> bridged into Home Assistant via MQTT, because for years there simply was
+> no public Home Assistant integration for these water softeners. Somewhat
+> foolishly, I only checked *afterwards* whether that had changed — and
+> apparently at least two integrations have been born since 2025 (see
+> [p0l0/hagruenbeck_cloud](https://github.com/p0l0/hagruenbeck_cloud) and
+> [tizianodeg/gruenbeck_softliQ_SC](https://github.com/tizianodeg/gruenbeck_softliQ_SC)
+> for the SC series). Unfortunately none of them are listed in HACS either.
+> Use whichever suits you; this one is the integration I actually run at
+> home, and my ioBroker instance finally gets to retire.
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![GitHub Release](https://img.shields.io/github/release/ironbiff/ha-gruenbeck-softliq.svg)](https://github.com/ironbiff/ha-gruenbeck-softliq/releases)
