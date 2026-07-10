@@ -9,5 +9,5 @@
   "issue_tracker": "https://github.com/ironbiff/ha-gruenbeck-softliq/issues",
   "loggers": ["custom_components.gruenbeck_softliq"],
   "requirements": [],
-  "version": "0.3.2"
+  "version": "0.4.0"
 }

@@ -135,6 +135,62 @@
           "power": "Power",
           "individual": "Individual"
         }
+      },
+      "operation_mode_monday": {
+        "name": "Operating mode Monday",
+        "state": {
+          "eco": "Eco",
+          "comfort": "Comfort",
+          "power": "Power"
+        }
+      },
+      "operation_mode_tuesday": {
+        "name": "Operating mode Tuesday",
+        "state": {
+          "eco": "Eco",
+          "comfort": "Comfort",
+          "power": "Power"
+        }
+      },
+      "operation_mode_wednesday": {
+        "name": "Operating mode Wednesday",
+        "state": {
+          "eco": "Eco",
+          "comfort": "Comfort",
+          "power": "Power"
+        }
+      },
+      "operation_mode_thursday": {
+        "name": "Operating mode Thursday",
+        "state": {
+          "eco": "Eco",
+          "comfort": "Comfort",
+          "power": "Power"
+        }
+      },
+      "operation_mode_friday": {
+        "name": "Operating mode Friday",
+        "state": {
+          "eco": "Eco",
+          "comfort": "Comfort",
+          "power": "Power"
+        }
+      },
+      "operation_mode_saturday": {
+        "name": "Operating mode Saturday",
+        "state": {
+          "eco": "Eco",
+          "comfort": "Comfort",
+          "power": "Power"
+        }
+      },
+      "operation_mode_sunday": {
+        "name": "Operating mode Sunday",
+        "state": {
+          "eco": "Eco",
+          "comfort": "Comfort",
+          "power": "Power"
+        }
       }
     }
   }

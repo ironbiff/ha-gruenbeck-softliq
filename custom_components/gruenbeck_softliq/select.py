@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
-from homeassistant.components.select import SelectEntity
+from dataclasses import dataclass
+
+from homeassistant.components.select import (
+    SelectEntity,
+    SelectEntityDescription,
+)
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -11,7 +16,50 @@ from .const import OPERATION_MODES
 from .coordinator import GruenbeckConfigEntry
 from .entity import GruenbeckEntity
 
-MODE_BY_OPTION = {option: mode for mode, option in OPERATION_MODES.items()}
+# Weekday modes (used while the main mode is "individual") only allow
+# Eco/Comfort/Power — "individual" itself is not a per-day option.
+DAY_MODES = {
+    mode: option
+    for mode, option in OPERATION_MODES.items()
+    if option != "individual"
+}
+
+
+@dataclass(frozen=True, kw_only=True)
+class GruenbeckSelectDescription(SelectEntityDescription):
+    """Describes a mode parameter of the softliQ device."""
+
+    parameter: str
+    modes: dict[int, str]
+
+
+SELECTS: tuple[GruenbeckSelectDescription, ...] = (
+    GruenbeckSelectDescription(
+        key="operation_mode",
+        translation_key="operation_mode",
+        parameter="pmode",
+        modes=OPERATION_MODES,
+        entity_category=EntityCategory.CONFIG,
+    ),
+    *(
+        GruenbeckSelectDescription(
+            key=f"operation_mode_{day}",
+            translation_key=f"operation_mode_{day}",
+            parameter=parameter,
+            modes=DAY_MODES,
+            entity_category=EntityCategory.CONFIG,
+        )
+        for day, parameter in (
+            ("monday", "pmodemo"),
+            ("tuesday", "pmodetu"),
+            ("wednesday", "pmodewe"),
+            ("thursday", "pmodeth"),
+            ("friday", "pmodefr"),
+            ("saturday", "pmodesa"),
+            ("sunday", "pmodesu"),
+        )
+    ),
+)
 
 
 async def async_setup_entry(
@@ -21,30 +69,41 @@ async def async_setup_entry(
 ) -> None:
     """Set up the select entities for a config entry."""
     coordinator = entry.runtime_data
-    async_add_entities([GruenbeckOperationModeSelect(coordinator)])
+    async_add_entities(
+        GruenbeckSelect(coordinator, description) for description in SELECTS
+    )
 
 
-class GruenbeckOperationModeSelect(GruenbeckEntity, SelectEntity):
-    """The operating mode (Eco / Comfort / Power / Individual)."""
+class GruenbeckSelect(GruenbeckEntity, SelectEntity):
+    """An operating-mode parameter of the softliQ device."""
 
-    _attr_translation_key = "operation_mode"
-    _attr_entity_category = EntityCategory.CONFIG
-    _attr_options = list(OPERATION_MODES.values())
+    entity_description: GruenbeckSelectDescription
 
-    def __init__(self, coordinator) -> None:
-        super().__init__(coordinator, "operation_mode")
+    def __init__(
+        self,
+        coordinator,
+        description: GruenbeckSelectDescription,
+    ) -> None:
+        super().__init__(coordinator, description.key)
+        self.entity_description = description
+        self._attr_options = list(description.modes.values())
+        self._mode_by_option = {
+            option: mode for mode, option in description.modes.items()
+        }
 
     @property
     def current_option(self) -> str | None:
         """Return the currently active mode."""
-        mode = self.coordinator.data.parameters.get("pmode")
+        mode = self.coordinator.data.parameters.get(
+            self.entity_description.parameter
+        )
         try:
-            return OPERATION_MODES.get(int(mode))
+            return self.entity_description.modes.get(int(mode))
         except (TypeError, ValueError):
             return None
 
     async def async_select_option(self, option: str) -> None:
-        """Change the operating mode."""
+        """Change the mode parameter."""
         await self.coordinator.async_set_parameter(
-            "pmode", MODE_BY_OPTION[option]
+            self.entity_description.parameter, self._mode_by_option[option]
         )

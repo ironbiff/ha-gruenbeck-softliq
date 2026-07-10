@@ -135,6 +135,62 @@
           "power": "Power",
           "individual": "Individuell"
         }
+      },
+      "operation_mode_monday": {
+        "name": "Betriebsmodus Montag",
+        "state": {
+          "eco": "Eco",
+          "comfort": "Comfort",
+          "power": "Power"
+        }
+      },
+      "operation_mode_tuesday": {
+        "name": "Betriebsmodus Dienstag",
+        "state": {
+          "eco": "Eco",
+          "comfort": "Comfort",
+          "power": "Power"
+        }
+      },
+      "operation_mode_wednesday": {
+        "name": "Betriebsmodus Mittwoch",
+        "state": {
+          "eco": "Eco",
+          "comfort": "Comfort",
+          "power": "Power"
+        }
+      },
+      "operation_mode_thursday": {
+        "name": "Betriebsmodus Donnerstag",
+        "state": {
+          "eco": "Eco",
+          "comfort": "Comfort",
+          "power": "Power"
+        }
+      },
+      "operation_mode_friday": {
+        "name": "Betriebsmodus Freitag",
+        "state": {
+          "eco": "Eco",
+          "comfort": "Comfort",
+          "power": "Power"
+        }
+      },
+      "operation_mode_saturday": {
+        "name": "Betriebsmodus Samstag",
+        "state": {
+          "eco": "Eco",
+          "comfort": "Comfort",
+          "power": "Power"
+        }
+      },
+      "operation_mode_sunday": {
+        "name": "Betriebsmodus Sonntag",
+        "state": {
+          "eco": "Eco",
+          "comfort": "Comfort",
+          "power": "Power"
+        }
       }
     }
   }
