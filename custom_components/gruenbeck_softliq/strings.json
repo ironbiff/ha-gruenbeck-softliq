@@ -137,7 +137,7 @@
         }
       },
       "operation_mode_monday": {
-        "name": "Operating mode Monday",
+        "name": "Operating mode 1 Monday",
         "state": {
           "eco": "Eco",
           "comfort": "Comfort",
@@ -145,7 +145,7 @@
         }
       },
       "operation_mode_tuesday": {
-        "name": "Operating mode Tuesday",
+        "name": "Operating mode 2 Tuesday",
         "state": {
           "eco": "Eco",
           "comfort": "Comfort",
@@ -153,7 +153,7 @@
         }
       },
       "operation_mode_wednesday": {
-        "name": "Operating mode Wednesday",
+        "name": "Operating mode 3 Wednesday",
         "state": {
           "eco": "Eco",
           "comfort": "Comfort",
@@ -161,7 +161,7 @@
         }
       },
       "operation_mode_thursday": {
-        "name": "Operating mode Thursday",
+        "name": "Operating mode 4 Thursday",
         "state": {
           "eco": "Eco",
           "comfort": "Comfort",
@@ -169,7 +169,7 @@
         }
       },
       "operation_mode_friday": {
-        "name": "Operating mode Friday",
+        "name": "Operating mode 5 Friday",
         "state": {
           "eco": "Eco",
           "comfort": "Comfort",
@@ -177,7 +177,7 @@
         }
       },
       "operation_mode_saturday": {
-        "name": "Operating mode Saturday",
+        "name": "Operating mode 6 Saturday",
         "state": {
           "eco": "Eco",
           "comfort": "Comfort",
@@ -185,7 +185,7 @@
         }
       },
       "operation_mode_sunday": {
-        "name": "Operating mode Sunday",
+        "name": "Operating mode 7 Sunday",
         "state": {
           "eco": "Eco",
           "comfort": "Comfort",

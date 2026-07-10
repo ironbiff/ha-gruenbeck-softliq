@@ -137,7 +137,7 @@
         }
       },
       "operation_mode_monday": {
-        "name": "Betriebsmodus Montag",
+        "name": "Betriebsmodus 1 Montag",
         "state": {
           "eco": "Eco",
           "comfort": "Comfort",
@@ -145,7 +145,7 @@
         }
       },
       "operation_mode_tuesday": {
-        "name": "Betriebsmodus Dienstag",
+        "name": "Betriebsmodus 2 Dienstag",
         "state": {
           "eco": "Eco",
           "comfort": "Comfort",
@@ -153,7 +153,7 @@
         }
       },
       "operation_mode_wednesday": {
-        "name": "Betriebsmodus Mittwoch",
+        "name": "Betriebsmodus 3 Mittwoch",
         "state": {
           "eco": "Eco",
           "comfort": "Comfort",
@@ -161,7 +161,7 @@
         }
       },
       "operation_mode_thursday": {
-        "name": "Betriebsmodus Donnerstag",
+        "name": "Betriebsmodus 4 Donnerstag",
         "state": {
           "eco": "Eco",
           "comfort": "Comfort",
@@ -169,7 +169,7 @@
         }
       },
       "operation_mode_friday": {
-        "name": "Betriebsmodus Freitag",
+        "name": "Betriebsmodus 5 Freitag",
         "state": {
           "eco": "Eco",
           "comfort": "Comfort",
@@ -177,7 +177,7 @@
         }
       },
       "operation_mode_saturday": {
-        "name": "Betriebsmodus Samstag",
+        "name": "Betriebsmodus 6 Samstag",
         "state": {
           "eco": "Eco",
           "comfort": "Comfort",
@@ -185,7 +185,7 @@
         }
       },
       "operation_mode_sunday": {
-        "name": "Betriebsmodus Sonntag",
+        "name": "Betriebsmodus 7 Sonntag",
         "state": {
           "eco": "Eco",
           "comfort": "Comfort",
