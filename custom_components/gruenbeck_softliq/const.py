@@ -14,7 +14,7 @@ DEFAULT_SCAN_INTERVAL = 360
 # How often the slow-changing endpoints are refreshed (seconds).
 DEVICE_INFO_INTERVAL = 60 * 60
 PARAMETERS_INTERVAL = 60 * 60
-MEASUREMENTS_INTERVAL = 8 * 60 * 60
+MEASUREMENTS_INTERVAL = 60 * 60
 # Retry delay after the cloud answered an endpoint with no data.
 EMPTY_RETRY_INTERVAL = 30 * 60
 

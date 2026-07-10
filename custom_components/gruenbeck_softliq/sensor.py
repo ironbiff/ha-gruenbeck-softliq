@@ -52,13 +52,23 @@ def _realtime_exists(key: str) -> Callable[[GruenbeckData], bool]:
     return lambda data: key in data.realtime
 
 
-def _latest_measurement(kind: str) -> Callable[[GruenbeckData], StateType]:
+def _today_measurement(kind: str) -> Callable[[GruenbeckData], StateType]:
+    """Return today's value from the daily measurement list.
+
+    The cloud list contains one entry per day including a running value
+    for the current day. Right after midnight the new day may not exist
+    yet — then today's consumption is 0, not yesterday's total.
+    """
+
     def _value(data: GruenbeckData) -> StateType:
         entries = getattr(data, kind)
         if not entries:
             return None
-        latest = max(entries, key=lambda entry: str(entry.get("date", "")))
-        return latest.get("value")
+        today = dt_util.now().date().isoformat()
+        for entry in entries:
+            if str(entry.get("date", ""))[:10] == today:
+                return entry.get("value")
+        return 0
 
     return _value
 
@@ -245,7 +255,7 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         native_unit_of_measurement=UnitOfMass.GRAMS,
         device_class=SensorDeviceClass.WEIGHT,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=_latest_measurement("salt"),
+        value_fn=_today_measurement("salt"),
         attributes_fn=lambda data: {"history": data.salt},
     ),
     GruenbeckSensorDescription(
@@ -253,7 +263,7 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         translation_key="water_usage_daily",
         native_unit_of_measurement=UnitOfVolume.LITERS,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=_latest_measurement("water"),
+        value_fn=_today_measurement("water"),
         attributes_fn=lambda data: {"history": data.water},
     ),
 )
