@@ -48,6 +48,7 @@ SELECTS: tuple[GruenbeckSelectDescription, ...] = (
             parameter=parameter,
             modes=DAY_MODES,
             entity_category=EntityCategory.CONFIG,
+            entity_registry_enabled_default=False,
         )
         for day, parameter in (
             ("monday", "pmodemo"),

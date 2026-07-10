@@ -136,6 +136,7 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
     GruenbeckSensorDescription(
         key="mflow2",
         translation_key="flow_rate_2",
+        entity_registry_enabled_default=False,
         native_unit_of_measurement=UnitOfVolumeFlowRate.CUBIC_METERS_PER_HOUR,
         device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -153,6 +154,7 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
     GruenbeckSensorDescription(
         key="mcountwater2",
         translation_key="soft_water_quantity_2",
+        entity_registry_enabled_default=False,
         native_unit_of_measurement=UnitOfVolume.LITERS,
         device_class=SensorDeviceClass.WATER,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -162,6 +164,7 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
     GruenbeckSensorDescription(
         key="mcountwatertank",
         translation_key="makeup_water_quantity",
+        entity_registry_enabled_default=False,
         native_unit_of_measurement=UnitOfVolume.LITERS,
         device_class=SensorDeviceClass.WATER,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -201,6 +204,7 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
     GruenbeckSensorDescription(
         key="mcountreg",
         translation_key="regeneration_counter",
+        entity_registry_enabled_default=False,
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_realtime("mcountreg"),
@@ -208,6 +212,7 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
     GruenbeckSensorDescription(
         key="mregstatus",
         translation_key="regeneration_step",
+        entity_registry_enabled_default=False,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_realtime("mregstatus"),
