@@ -46,7 +46,8 @@ and regeneration status update within seconds.
   - Soft water quantity (L, suitable for the water dashboard)
   - Remaining capacity (m³ and %)
   - Salt range (days) and total salt consumption (kg)
-  - Daily salt (kg) and water (L) consumption incl. history attribute
+  - Daily salt (g) and water (L) statistics for the **last completed
+    day** (entry date and a 14-day history as attributes)
   - Next regeneration (timestamp), regeneration step/progress/counter
   - Days until next maintenance, startup date
 - **Binary sensors** — regeneration running, device problem
@@ -103,6 +104,24 @@ and creates one Home Assistant device with all entities.
 Live values arrive over the websocket independently of this interval.
 Device information and parameters are refreshed hourly, the daily salt and
 water statistics every 8 hours.
+
+## Live "consumption today"
+
+The cloud's daily statistics endpoint only publishes a day once it is
+over — there is no live value for the running day. For a live "today"
+value (like the myGrünbeck app shows), create **utility meter helpers**
+(Settings → Devices & services → Helpers → Utility Meter, cycle
+*daily*) on top of the total counters:
+
+| Helper source | Result |
+| --- | --- |
+| `sensor.<device>_soft_water_quantity` | Soft water consumed today (L) |
+| `sensor.<device>_salt_consumption_total` | Salt consumed today (kg) |
+
+The counters are pushed over the websocket, so these helpers update in
+near-realtime and reset at midnight. Use
+`utility_meter.calibrate` once after creation if you want them to start
+with the day's already-consumed amount.
 
 ## Notes & known limitations
 
