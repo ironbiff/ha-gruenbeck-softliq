@@ -1,4 +1,4 @@
-<img src="assets/logo_source.png" alt="Logo" width="96" align="right"/>
+<img src="custom_components/gruenbeck_softliq/brand/icon.png" alt="Logo" width="96" align="right"/>
 
 # Grünbeck softliQ Cloud — Home Assistant Integration
 
