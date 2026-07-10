@@ -103,6 +103,12 @@
       },
       "last_service": {
         "name": "Last maintenance"
+      },
+      "water_usage_today": {
+        "name": "Water consumption today"
+      },
+      "salt_usage_today": {
+        "name": "Salt consumption today"
       }
     },
     "binary_sensor": {

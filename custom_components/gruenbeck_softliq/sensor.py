@@ -92,6 +92,21 @@ def _daily_attributes(
     return _attributes
 
 
+def _today_consumption(key: str) -> Callable[[GruenbeckData], StateType]:
+    """Consumption since local midnight (coordinator daily tracker)."""
+
+    def _value(data: GruenbeckData) -> StateType:
+        daily = data.daily
+        if not daily:
+            return None
+        if daily.get("date") != dt_util.now().date().isoformat():
+            # Right after midnight, before the tracker rolled over.
+            return 0
+        return daily.get("today", {}).get(key)
+
+    return _value
+
+
 def _as_timestamp(value: Any) -> datetime | None:
     if not value or not isinstance(value, str):
         return None
@@ -277,6 +292,24 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         device_class=SensorDeviceClass.DATE,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda data: _as_date(data.device.get("lastService")),
+    ),
+    # --- consumption since midnight (tracked from the total counters) ---
+    GruenbeckSensorDescription(
+        key="water_today",
+        translation_key="water_usage_today",
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        device_class=SensorDeviceClass.WATER,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        value_fn=_today_consumption("water"),
+    ),
+    GruenbeckSensorDescription(
+        key="salt_today",
+        translation_key="salt_usage_today",
+        native_unit_of_measurement=UnitOfMass.KILOGRAMS,
+        device_class=SensorDeviceClass.WEIGHT,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        suggested_display_precision=3,
+        value_fn=_today_consumption("salt"),
     ),
     # --- daily measurements ---
     GruenbeckSensorDescription(

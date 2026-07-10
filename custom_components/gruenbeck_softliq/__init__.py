@@ -57,6 +57,7 @@ async def async_setup_entry(
     # One coordinator per account entry; softliQ accounts typically hold
     # a single device, we use the first one (like the mobile app).
     coordinator = GruenbeckCoordinator(hass, entry, api, devices[0])
+    await coordinator.async_load_daily()
     await coordinator.async_config_entry_first_refresh()
     coordinator.start_websocket()
 

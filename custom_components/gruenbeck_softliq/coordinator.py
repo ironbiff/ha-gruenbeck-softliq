@@ -12,10 +12,12 @@ from typing import Any
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
+from homeassistant.util import dt as dt_util
 
 from .api import (
     GruenbeckAuthError,
@@ -53,6 +55,9 @@ class GruenbeckData:
     realtime: dict[str, Any] = field(default_factory=dict)
     salt: list[dict[str, Any]] = field(default_factory=list)
     water: list[dict[str, Any]] = field(default_factory=list)
+    # Consumption since local midnight, tracked against the total
+    # counters: {"date": iso, "baselines": {...}, "today": {...}}.
+    daily: dict[str, Any] = field(default_factory=dict)
 
 
 def hardness_unit(data: GruenbeckData) -> str:
@@ -94,6 +99,16 @@ class GruenbeckCoordinator(DataUpdateCoordinator[GruenbeckData]):
         # instead of the full interval.
         self._fetch_state: dict[str, tuple[float, bool]] = {}
         self._ws_task: asyncio.Task | None = None
+        # Midnight baselines for the built-in "consumption today"
+        # sensors, persisted across restarts.
+        self._store: Store[dict[str, Any]] = Store(
+            hass, 1, f"{DOMAIN}.daily_{entry.entry_id}"
+        )
+        self._loaded_daily: dict[str, Any] = {}
+
+    async def async_load_daily(self) -> None:
+        """Load the persisted daily-consumption baselines."""
+        self._loaded_daily = await self._store.async_load() or {}
 
     def _fetch_due(self, key: str, interval: int, now: float) -> bool:
         """Whether an endpoint is due for a fetch."""
@@ -105,7 +120,9 @@ class GruenbeckCoordinator(DataUpdateCoordinator[GruenbeckData]):
 
     async def _async_update_data(self) -> GruenbeckData:
         """Poll the cloud API."""
-        data = self.data or GruenbeckData(device=self._initial_device)
+        data = self.data or GruenbeckData(
+            device=self._initial_device, daily=self._loaded_daily
+        )
         now = time.monotonic()
 
         try:
@@ -144,7 +161,37 @@ class GruenbeckCoordinator(DataUpdateCoordinator[GruenbeckData]):
         except GruenbeckError as err:
             raise UpdateFailed(str(err)) from err
 
+        self._update_daily(data)
         return data
+
+    # Total counters feeding the "consumption today" sensors.
+    _DAILY_COUNTERS = {"water": "mcountwater1", "salt": "msaltusage"}
+
+    def _update_daily(self, data: GruenbeckData) -> bool:
+        """Track consumption since local midnight; return True on change."""
+        daily = data.daily
+        today = dt_util.now().date().isoformat()
+        changed = False
+        if daily.get("date") != today:
+            daily.clear()
+            daily.update({"date": today, "baselines": {}, "today": {}})
+            changed = True
+        for key, source in self._DAILY_COUNTERS.items():
+            value = data.realtime.get(source)
+            if not isinstance(value, (int, float)) or isinstance(value, bool):
+                continue
+            baseline = daily["baselines"].get(key)
+            if baseline is None or value < baseline:
+                # Start of day (or the cloud counter was reset).
+                daily["baselines"][key] = baseline = value
+                changed = True
+            consumed = round(value - baseline, 3)
+            if daily["today"].get(key) != consumed:
+                daily["today"][key] = consumed
+                changed = True
+        if changed:
+            self._store.async_delay_save(lambda: dict(data.daily), 60)
+        return changed
 
     async def async_set_parameters(self, updates: dict[str, Any]) -> None:
         """Write device parameters and update local state."""
@@ -192,6 +239,8 @@ class GruenbeckCoordinator(DataUpdateCoordinator[GruenbeckData]):
         if self._ws_task is not None:
             self._ws_task.cancel()
             self._ws_task = None
+        if self.data and self.data.daily:
+            await self._store.async_save(dict(self.data.daily))
         try:
             await self.api.async_realtime(self.device_id, "leave")
         except GruenbeckError:
@@ -231,7 +280,9 @@ class GruenbeckCoordinator(DataUpdateCoordinator[GruenbeckData]):
             return
         if self.data is None:
             return
-        if self._merge_realtime(self.data.realtime, message):
+        merged = self._merge_realtime(self.data.realtime, message)
+        daily_changed = self._update_daily(self.data)
+        if merged or daily_changed:
             # async_update_listeners (unlike async_set_updated_data) does
             # not reset the poll schedule, so the realtime keep-alive
             # keeps firing every scan interval even during push bursts.

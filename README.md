@@ -107,21 +107,11 @@ water statistics every 8 hours.
 
 ## Live "consumption today"
 
-The cloud's daily statistics endpoint only publishes a day once it is
-over — there is no live value for the running day. For a live "today"
-value (like the myGrünbeck app shows), create **utility meter helpers**
-(Settings → Devices & services → Helpers → Utility Meter, cycle
-*daily*) on top of the total counters:
-
-| Helper source | Result |
-| --- | --- |
-| `sensor.<device>_soft_water_quantity` | Soft water consumed today (L) |
-| `sensor.<device>_salt_consumption_total` | Salt consumed today (kg) |
-
-The counters are pushed over the websocket, so these helpers update in
-near-realtime and reset at midnight. Use
-`utility_meter.calibrate` once after creation if you want them to start
-with the day's already-consumed amount.
+The integration provides built-in **Water consumption today** and
+**Salt consumption today** sensors: they track the websocket-pushed
+total counters against a midnight baseline that is persisted across
+restarts. The separate "last day" statistics sensors reflect the
+cloud's own daily history, which only covers completed days.
 
 ## Notes & known limitations
 
