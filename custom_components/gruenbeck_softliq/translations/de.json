@@ -220,7 +220,7 @@
     },
     "time": {
       "regeneration_time": {
-        "name": "Fester Regenerationszeitpunkt"
+        "name": "Regenerationszeitpunkt (fest)"
       }
     }
   }

@@ -203,7 +203,7 @@
         }
       },
       "regeneration_mode": {
-        "name": "Regeneration time mode",
+        "name": "Regeneration time",
         "state": {
           "automatic": "Automatic",
           "fixed": "Fixed"
@@ -220,7 +220,7 @@
     },
     "time": {
       "regeneration_time": {
-        "name": "Fixed regeneration time"
+        "name": "Regeneration time (fixed)"
       }
     }
   }
