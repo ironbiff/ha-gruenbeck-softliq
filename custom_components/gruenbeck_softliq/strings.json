@@ -93,10 +93,10 @@
         "name": "Startup date"
       },
       "salt_usage_daily": {
-        "name": "Salt consumption today"
+        "name": "Salt consumption last day"
       },
       "water_usage_daily": {
-        "name": "Water consumption today"
+        "name": "Water consumption last day"
       },
       "last_error": {
         "name": "Last error"

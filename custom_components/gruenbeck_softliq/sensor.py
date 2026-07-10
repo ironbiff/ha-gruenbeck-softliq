@@ -52,25 +52,44 @@ def _realtime_exists(key: str) -> Callable[[GruenbeckData], bool]:
     return lambda data: key in data.realtime
 
 
-def _today_measurement(kind: str) -> Callable[[GruenbeckData], StateType]:
-    """Return today's value from the daily measurement list.
+# The cloud only publishes a day's consumption once the day is (almost)
+# over — there is no live value for the current day on this endpoint.
+# These sensors therefore represent the most recent *completed* day; a
+# live "today" value can be built with a daily utility_meter helper on
+# top of the total counters.
 
-    The cloud list contains one entry per day including a running value
-    for the current day. Right after midnight the new day may not exist
-    yet — then today's consumption is 0, not yesterday's total.
-    """
 
+def _daily_entry(data: GruenbeckData, kind: str) -> dict[str, Any] | None:
+    """Return the most recent daily measurement entry."""
+    entries = getattr(data, kind)
+    if not entries:
+        return None
+    return max(entries, key=lambda entry: str(entry.get("date", "")))
+
+
+def _daily_measurement(kind: str) -> Callable[[GruenbeckData], StateType]:
     def _value(data: GruenbeckData) -> StateType:
-        entries = getattr(data, kind)
-        if not entries:
-            return None
-        today = dt_util.now().date().isoformat()
-        for entry in entries:
-            if str(entry.get("date", ""))[:10] == today:
-                return entry.get("value")
-        return 0
+        entry = _daily_entry(data, kind)
+        return entry.get("value") if entry else None
 
     return _value
+
+
+def _daily_attributes(
+    kind: str,
+) -> Callable[[GruenbeckData], Mapping[str, Any] | None]:
+    def _attributes(data: GruenbeckData) -> Mapping[str, Any] | None:
+        entry = _daily_entry(data, kind)
+        if entry is None:
+            return None
+        # Full history since commissioning is huge (years of entries);
+        # keep a short window for dashboards.
+        return {
+            "date": entry.get("date"),
+            "history": getattr(data, kind)[-14:],
+        }
+
+    return _attributes
 
 
 def _as_timestamp(value: Any) -> datetime | None:
@@ -255,16 +274,16 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         native_unit_of_measurement=UnitOfMass.GRAMS,
         device_class=SensorDeviceClass.WEIGHT,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=_today_measurement("salt"),
-        attributes_fn=lambda data: {"history": data.salt},
+        value_fn=_daily_measurement("salt"),
+        attributes_fn=_daily_attributes("salt"),
     ),
     GruenbeckSensorDescription(
         key="water_daily",
         translation_key="water_usage_daily",
         native_unit_of_measurement=UnitOfVolume.LITERS,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=_today_measurement("water"),
-        attributes_fn=lambda data: {"history": data.water},
+        value_fn=_daily_measurement("water"),
+        attributes_fn=_daily_attributes("water"),
     ),
 )
 
@@ -313,6 +332,8 @@ class GruenbeckSensor(GruenbeckEntity, SensorEntity):
     """A sensor of the softliQ device."""
 
     entity_description: GruenbeckSensorDescription
+    # Keep the measurement history window out of the recorder database.
+    _unrecorded_attributes = frozenset({"history"})
 
     def __init__(
         self,

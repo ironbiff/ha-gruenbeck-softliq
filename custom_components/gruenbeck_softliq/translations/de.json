@@ -93,10 +93,10 @@
         "name": "Inbetriebnahme"
       },
       "salt_usage_daily": {
-        "name": "Salzverbrauch heute"
+        "name": "Salzverbrauch letzter Tag"
       },
       "water_usage_daily": {
-        "name": "Wasserverbrauch heute"
+        "name": "Wasserverbrauch letzter Tag"
       },
       "last_error": {
         "name": "Letzter Fehler"
