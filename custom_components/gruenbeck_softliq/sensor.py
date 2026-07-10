@@ -264,8 +264,14 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         translation_key="startup_date",
         device_class=SensorDeviceClass.DATE,
         entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
         value_fn=lambda data: _as_date(data.device.get("startup")),
+    ),
+    GruenbeckSensorDescription(
+        key="last_service",
+        translation_key="last_service",
+        device_class=SensorDeviceClass.DATE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: _as_date(data.device.get("lastService")),
     ),
     # --- daily measurements ---
     GruenbeckSensorDescription(

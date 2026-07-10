@@ -100,6 +100,9 @@
       },
       "last_error": {
         "name": "Letzter Fehler"
+      },
+      "last_service": {
+        "name": "Letzte Wartung"
       }
     },
     "binary_sensor": {
@@ -191,6 +194,33 @@
           "comfort": "Comfort",
           "power": "Power"
         }
+      },
+      "hardness_unit": {
+        "name": "Härteeinheit",
+        "state": {
+          "dh": "°dH",
+          "fh": "°fH"
+        }
+      },
+      "regeneration_mode": {
+        "name": "Regenerationszeitpunkt",
+        "state": {
+          "automatic": "Automatik",
+          "fixed": "Fest"
+        }
+      }
+    },
+    "switch": {
+      "dst_auto": {
+        "name": "Automatische Sommer-/Winterzeit"
+      },
+      "buzzer": {
+        "name": "Audiosignal bei Störung"
+      }
+    },
+    "time": {
+      "regeneration_time": {
+        "name": "Fester Regenerationszeitpunkt"
       }
     }
   }

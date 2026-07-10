@@ -146,19 +146,17 @@ class GruenbeckCoordinator(DataUpdateCoordinator[GruenbeckData]):
 
         return data
 
-    async def async_set_parameter(self, parameter: str, value: Any) -> None:
-        """Write one device parameter and update local state."""
+    async def async_set_parameters(self, updates: dict[str, Any]) -> None:
+        """Write device parameters and update local state."""
         try:
-            await self.api.async_set_parameters(
-                self.device_id, {parameter: value}
-            )
+            await self.api.async_set_parameters(self.device_id, updates)
         except GruenbeckError as err:
             raise HomeAssistantError(
-                f"Setting {parameter} failed: {err}"
+                f"Setting {', '.join(updates)} failed: {err}"
             ) from err
-        # The cloud applies writes asynchronously; show the new value
+        # The cloud applies writes asynchronously; show the new values
         # right away and let the periodic parameters poll reconcile.
-        self.data.parameters[parameter] = value
+        self.data.parameters.update(updates)
         self.async_update_listeners()
 
     @staticmethod

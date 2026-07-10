@@ -59,6 +59,21 @@ SELECTS: tuple[GruenbeckSelectDescription, ...] = (
             ("sunday", "pmodesu"),
         )
     ),
+    GruenbeckSelectDescription(
+        key="hardness_unit",
+        translation_key="hardness_unit",
+        parameter="phunit",
+        modes={1: "dh", 2: "fh"},
+        entity_category=EntityCategory.CONFIG,
+        entity_registry_enabled_default=False,
+    ),
+    GruenbeckSelectDescription(
+        key="regeneration_mode",
+        translation_key="regeneration_mode",
+        parameter="pregmode",
+        modes={0: "automatic", 1: "fixed"},
+        entity_category=EntityCategory.CONFIG,
+    ),
 )
 
 
@@ -104,6 +119,6 @@ class GruenbeckSelect(GruenbeckEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Change the mode parameter."""
-        await self.coordinator.async_set_parameter(
-            self.entity_description.parameter, self._mode_by_option[option]
+        await self.coordinator.async_set_parameters(
+            {self.entity_description.parameter: self._mode_by_option[option]}
         )

@@ -100,6 +100,9 @@
       },
       "last_error": {
         "name": "Last error"
+      },
+      "last_service": {
+        "name": "Last maintenance"
       }
     },
     "binary_sensor": {
@@ -191,6 +194,33 @@
           "comfort": "Comfort",
           "power": "Power"
         }
+      },
+      "hardness_unit": {
+        "name": "Hardness unit",
+        "state": {
+          "dh": "°dH",
+          "fh": "°fH"
+        }
+      },
+      "regeneration_mode": {
+        "name": "Regeneration time mode",
+        "state": {
+          "automatic": "Automatic",
+          "fixed": "Fixed"
+        }
+      }
+    },
+    "switch": {
+      "dst_auto": {
+        "name": "Automatic DST switchover"
+      },
+      "buzzer": {
+        "name": "Audio signal on failure"
+      }
+    },
+    "time": {
+      "regeneration_time": {
+        "name": "Fixed regeneration time"
       }
     }
   }

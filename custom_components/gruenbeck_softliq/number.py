@@ -102,7 +102,10 @@ class GruenbeckNumber(GruenbeckEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Write the parameter to the device."""
-        await self.coordinator.async_set_parameter(
-            self.entity_description.parameter,
-            int(value) if value.is_integer() else value,
+        await self.coordinator.async_set_parameters(
+            {
+                self.entity_description.parameter: (
+                    int(value) if value.is_integer() else value
+                )
+            }
         )
