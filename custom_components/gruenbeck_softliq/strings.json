@@ -136,6 +136,12 @@
       },
       "valve_step": {
         "name": "Valve step"
+      },
+      "blended_water_total": {
+        "name": "Total water"
+      },
+      "blended_water_today": {
+        "name": "Total water today"
       }
     },
     "binary_sensor": {

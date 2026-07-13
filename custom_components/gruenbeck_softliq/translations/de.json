@@ -136,6 +136,12 @@
       },
       "valve_step": {
         "name": "Ventilschritt"
+      },
+      "blended_water_total": {
+        "name": "Gesamtwasser"
+      },
+      "blended_water_today": {
+        "name": "Gesamtwasser heute"
       }
     },
     "binary_sensor": {

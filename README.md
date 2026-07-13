@@ -115,6 +115,39 @@ total counters against a midnight baseline that is persisted across
 restarts. The separate "last day" statistics sensors reflect the
 cloud's own daily history, which only covers completed days.
 
+## Total (blended) water — how it is calculated
+
+The device's soft water counter only measures the water that passed
+through the ion exchanger. Your tap water is **blended**: the softener
+mixes raw water back into the softened water until the configured
+setpoint hardness is reached (that is what the blending valve and the
+blending water meter in the device are for). The soft water counter
+therefore *undercounts* your real consumption.
+
+The **Total water** sensors reconstruct the real volume with simple
+mixing arithmetic. With
+
+- `S` = soft water volume (exchanger output, ≈ 0 °dH),
+- `B` = blended-in raw water volume,
+- `R` = raw water hardness, `Z` = soft water setpoint hardness,
+
+the hardness balance of the mix is `S·0 + B·R = (S+B)·Z`. Solving for
+`B` gives `B = S·Z/(R−Z)`, so the total volume is:
+
+```
+total = S + B = S · R / (R − Z)
+```
+
+Example: raw water 15 °dH, setpoint 3 °dH → factor 15/12 = 1.25; every
+100 L on the soft water counter correspond to 125 L of real water.
+
+The current factor and its inputs are exposed as attributes of the
+sensors. Caveats: the formula assumes the exchanger output is 0 °dH and
+that the blending valve hits the setpoint exactly — compare the
+*Soft water hardness* (actual value) sensor with your setpoint to judge
+how accurate that is for your installation. The sensors are unavailable
+when `R ≤ Z` (no blending possible).
+
 ## Notes & known limitations
 
 - Hardness units follow the unit configured on the device (°dH or °fH).

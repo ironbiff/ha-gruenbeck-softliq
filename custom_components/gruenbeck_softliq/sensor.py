@@ -107,6 +107,55 @@ def _today_consumption(key: str) -> Callable[[GruenbeckData], StateType]:
     return _value
 
 
+def _blend_factor(data: GruenbeckData) -> float | None:
+    """Factor from soft-water volume to total (blended) volume.
+
+    The exchanger output is ~0 °dH; the device blends raw water (R °dH)
+    into the softened water until the setpoint hardness Z is reached.
+    Mass balance: S·0 + B·R = (S+B)·Z  →  total = S + B = S·R/(R−Z).
+    See the README for the full derivation.
+    """
+    try:
+        raw = float(data.parameters["prawhard"])
+        soft = float(data.parameters["psetsoft"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    if raw <= soft:
+        return None
+    return raw / (raw - soft)
+
+
+def _blended_total(data: GruenbeckData) -> StateType:
+    value = data.realtime.get("mcountwater1")
+    factor = _blend_factor(data)
+    if (
+        not isinstance(value, (int, float))
+        or isinstance(value, bool)
+        or factor is None
+    ):
+        return None
+    return round(value * factor, 1)
+
+
+def _blended_today(data: GruenbeckData) -> StateType:
+    factor = _blend_factor(data)
+    base = _today_consumption("water")(data)
+    if base is None or factor is None:
+        return None
+    return round(float(base) * factor, 1)
+
+
+def _blend_attributes(data: GruenbeckData) -> Mapping[str, Any] | None:
+    factor = _blend_factor(data)
+    if factor is None:
+        return None
+    return {
+        "blend_factor": round(factor, 4),
+        "raw_water_hardness": data.parameters.get("prawhard"),
+        "soft_water_setpoint": data.parameters.get("psetsoft"),
+    }
+
+
 def _as_timestamp(value: Any) -> datetime | None:
     if not value or not isinstance(value, str):
         return None
@@ -362,6 +411,25 @@ SENSORS: tuple[GruenbeckSensorDescription, ...] = (
         device_class=SensorDeviceClass.DATE,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda data: _as_date(data.device.get("lastService")),
+    ),
+    # --- total (blended) water, derived: soft water × R/(R−Z) ---
+    GruenbeckSensorDescription(
+        key="blended_water_total",
+        translation_key="blended_water_total",
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        device_class=SensorDeviceClass.WATER,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        value_fn=_blended_total,
+        attributes_fn=_blend_attributes,
+    ),
+    GruenbeckSensorDescription(
+        key="blended_water_today",
+        translation_key="blended_water_today",
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        device_class=SensorDeviceClass.WATER,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        value_fn=_blended_today,
+        attributes_fn=_blend_attributes,
     ),
     # --- consumption since midnight (tracked from the total counters) ---
     GruenbeckSensorDescription(
