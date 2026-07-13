@@ -109,6 +109,33 @@
       },
       "salt_usage_today": {
         "name": "Salt consumption today"
+      },
+      "remaining_capacity_volume_2": {
+        "name": "Remaining capacity exchanger 2"
+      },
+      "remaining_capacity_2": {
+        "name": "Remaining capacity percent exchanger 2"
+      },
+      "regeneration_remaining": {
+        "name": "Regeneration remaining"
+      },
+      "last_regeneration": {
+        "name": "Last regeneration"
+      },
+      "blending_flow_rate": {
+        "name": "Blending flow rate"
+      },
+      "capacity_figure": {
+        "name": "Capacity figure"
+      },
+      "flow_rate_peak": {
+        "name": "Flow rate peak value"
+      },
+      "regeneration_flow_rate": {
+        "name": "Regeneration flow rate"
+      },
+      "valve_step": {
+        "name": "Valve step"
       }
     },
     "binary_sensor": {
@@ -133,6 +160,18 @@
       },
       "soft_water_hardness_setpoint": {
         "name": "Soft water hardness setpoint"
+      },
+      "forced_regeneration_interval": {
+        "name": "Forced regeneration interval"
+      },
+      "maintenance_interval": {
+        "name": "Maintenance interval"
+      },
+      "residual_capacity_limit": {
+        "name": "Residual capacity limit"
+      },
+      "led_brightness": {
+        "name": "LED brightness"
       }
     },
     "select": {
@@ -214,6 +253,16 @@
           "automatic": "Automatic",
           "fixed": "Fixed"
         }
+      },
+      "led_mode": {
+        "name": "LED ring",
+        "state": {
+          "off": "Off",
+          "permanent": "Permanently on",
+          "failure": "On failure",
+          "operation_failure": "On operation + failure",
+          "water_operation_failure": "On water treatment + operation + failure"
+        }
       }
     },
     "switch": {
@@ -222,6 +271,12 @@
       },
       "buzzer": {
         "name": "Audio signal on failure"
+      },
+      "email_notification": {
+        "name": "Email notification"
+      },
+      "push_notification": {
+        "name": "Push notification"
       }
     },
     "time": {

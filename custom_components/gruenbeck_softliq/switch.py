@@ -37,6 +37,20 @@ SWITCHES: tuple[GruenbeckSwitchDescription, ...] = (
         parameter="pbuzzer",
         entity_category=EntityCategory.CONFIG,
     ),
+    GruenbeckSwitchDescription(
+        key="email_notification",
+        translation_key="email_notification",
+        parameter="pallowemail",
+        entity_category=EntityCategory.CONFIG,
+        entity_registry_enabled_default=False,
+    ),
+    GruenbeckSwitchDescription(
+        key="push_notification",
+        translation_key="push_notification",
+        parameter="pallowpushnotification",
+        entity_category=EntityCategory.CONFIG,
+        entity_registry_enabled_default=False,
+    ),
 )
 
 

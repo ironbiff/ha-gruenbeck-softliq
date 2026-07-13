@@ -75,6 +75,22 @@ SELECTS: tuple[GruenbeckSelectDescription, ...] = (
         modes={0: "automatic", 1: "fixed"},
         entity_category=EntityCategory.CONFIG,
     ),
+    # LED ring: only SD21/SD23 have the hardware; the parameter exists
+    # on all models. Mapping via pygruenbeck_cloud.
+    GruenbeckSelectDescription(
+        key="led_mode",
+        translation_key="led_mode",
+        parameter="pled",
+        modes={
+            0: "off",
+            1: "permanent",
+            2: "failure",
+            3: "operation_failure",
+            4: "water_operation_failure",
+        },
+        entity_category=EntityCategory.CONFIG,
+        entity_registry_enabled_default=False,
+    ),
 )
 
 

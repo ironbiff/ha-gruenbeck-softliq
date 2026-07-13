@@ -9,7 +9,7 @@ from homeassistant.components.number import (
     NumberEntityDescription,
     NumberMode,
 )
-from homeassistant.const import EntityCategory
+from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -25,6 +25,8 @@ class GruenbeckNumberDescription(NumberEntityDescription):
     """Describes a writable Grünbeck parameter."""
 
     parameter: str
+    # Hardness values follow the unit configured on the device.
+    hardness: bool = False
 
 
 NUMBERS: tuple[GruenbeckNumberDescription, ...] = (
@@ -32,6 +34,7 @@ NUMBERS: tuple[GruenbeckNumberDescription, ...] = (
         key="raw_water_hardness",
         translation_key="raw_water_hardness",
         parameter="prawhard",
+        hardness=True,
         native_min_value=1,
         native_max_value=45,
         native_step=1,
@@ -42,10 +45,59 @@ NUMBERS: tuple[GruenbeckNumberDescription, ...] = (
         key="soft_water_hardness_setpoint",
         translation_key="soft_water_hardness_setpoint",
         parameter="psetsoft",
+        hardness=True,
         native_min_value=0,
         native_max_value=15,
         native_step=1,
         mode=NumberMode.BOX,
+        entity_category=EntityCategory.CONFIG,
+    ),
+    GruenbeckNumberDescription(
+        key="forced_regeneration_interval",
+        translation_key="forced_regeneration_interval",
+        parameter="pforcedregdist",
+        entity_registry_enabled_default=False,
+        native_min_value=1,
+        native_max_value=14,
+        native_step=1,
+        native_unit_of_measurement=UnitOfTime.DAYS,
+        mode=NumberMode.BOX,
+        entity_category=EntityCategory.CONFIG,
+    ),
+    GruenbeckNumberDescription(
+        key="maintenance_interval",
+        translation_key="maintenance_interval",
+        parameter="pmaintint",
+        entity_registry_enabled_default=False,
+        native_min_value=1,
+        native_max_value=730,
+        native_step=1,
+        native_unit_of_measurement=UnitOfTime.DAYS,
+        mode=NumberMode.BOX,
+        entity_category=EntityCategory.CONFIG,
+    ),
+    GruenbeckNumberDescription(
+        key="residual_capacity_limit",
+        translation_key="residual_capacity_limit",
+        parameter="prescaplimit",
+        entity_registry_enabled_default=False,
+        native_min_value=0,
+        native_max_value=100,
+        native_step=1,
+        native_unit_of_measurement=PERCENTAGE,
+        mode=NumberMode.BOX,
+        entity_category=EntityCategory.CONFIG,
+    ),
+    GruenbeckNumberDescription(
+        key="led_brightness",
+        translation_key="led_brightness",
+        parameter="pledbright",
+        entity_registry_enabled_default=False,
+        native_min_value=0,
+        native_max_value=100,
+        native_step=1,
+        native_unit_of_measurement=PERCENTAGE,
+        mode=NumberMode.SLIDER,
         entity_category=EntityCategory.CONFIG,
     ),
 )
@@ -64,7 +116,7 @@ async def async_setup_entry(
 
 
 class GruenbeckNumber(GruenbeckEntity, NumberEntity):
-    """A writable hardness parameter of the softliQ device."""
+    """A writable numeric parameter of the softliQ device."""
 
     entity_description: GruenbeckNumberDescription
 
@@ -77,15 +129,20 @@ class GruenbeckNumber(GruenbeckEntity, NumberEntity):
         self.entity_description = description
 
     @property
-    def native_unit_of_measurement(self) -> str:
-        """Return the hardness unit configured on the device."""
-        return hardness_unit(self.coordinator.data)
+    def native_unit_of_measurement(self) -> str | None:
+        """Return the unit, following the device's hardness setting."""
+        if self.entity_description.hardness:
+            return hardness_unit(self.coordinator.data)
+        return self.entity_description.native_unit_of_measurement
 
     @property
     def native_max_value(self) -> float:
         """Return the maximum, scaled for French hardness degrees."""
         maximum = self.entity_description.native_max_value
-        if hardness_unit(self.coordinator.data) == "°fH":
+        if (
+            self.entity_description.hardness
+            and hardness_unit(self.coordinator.data) == "°fH"
+        ):
             return round(maximum * _DH_TO_FH)
         return maximum
 

@@ -109,6 +109,33 @@
       },
       "salt_usage_today": {
         "name": "Salzverbrauch heute"
+      },
+      "remaining_capacity_volume_2": {
+        "name": "Restkapazität Tauscher 2"
+      },
+      "remaining_capacity_2": {
+        "name": "Restkapazität Prozent Tauscher 2"
+      },
+      "regeneration_remaining": {
+        "name": "Regeneration verbleibend"
+      },
+      "last_regeneration": {
+        "name": "Letzte Regeneration"
+      },
+      "blending_flow_rate": {
+        "name": "Verschnitt-Durchfluss"
+      },
+      "capacity_figure": {
+        "name": "Kapazitätszahl"
+      },
+      "flow_rate_peak": {
+        "name": "Durchfluss Spitzenwert"
+      },
+      "regeneration_flow_rate": {
+        "name": "Regenerations-Durchfluss"
+      },
+      "valve_step": {
+        "name": "Ventilschritt"
       }
     },
     "binary_sensor": {
@@ -133,6 +160,18 @@
       },
       "soft_water_hardness_setpoint": {
         "name": "Sollwert Weichwasserhärte"
+      },
+      "forced_regeneration_interval": {
+        "name": "Zwangsregeneration Intervall"
+      },
+      "maintenance_interval": {
+        "name": "Wartungsintervall"
+      },
+      "residual_capacity_limit": {
+        "name": "Restkapazitäts-Grenzwert"
+      },
+      "led_brightness": {
+        "name": "LED-Helligkeit"
       }
     },
     "select": {
@@ -214,6 +253,16 @@
           "automatic": "Automatik",
           "fixed": "Fest"
         }
+      },
+      "led_mode": {
+        "name": "LED-Ring",
+        "state": {
+          "off": "Aus",
+          "permanent": "Dauerhaft an",
+          "failure": "Bei Störung",
+          "operation_failure": "Bei Bedienung + Störung",
+          "water_operation_failure": "Bei Wasserbezug + Bedienung + Störung"
+        }
       }
     },
     "switch": {
@@ -222,6 +271,12 @@
       },
       "buzzer": {
         "name": "Audiosignal bei Störung"
+      },
+      "email_notification": {
+        "name": "E-Mail-Benachrichtigung"
+      },
+      "push_notification": {
+        "name": "Push-Benachrichtigung"
       }
     },
     "time": {
